@@ -7,9 +7,35 @@ import initContacts from '../contacts.json';
 
 export class App extends Component {
 
+  LS_CONTACTS_KEY = 'PhoneBook_Contacts';
+
   state = {
-    contacts: [...initContacts],
+    contacts: [],
     filter: '',
+  }
+
+  componentDidMount() {
+    const jsonContacts = localStorage.getItem(this.LS_CONTACTS_KEY);
+    if (jsonContacts !== null) {
+      try {
+        this.setState({ contacts: JSON.parse(jsonContacts) });
+        return;
+      } catch (err) {
+        console.error(`Error: invalid saved contacts in LocalStorage: ${this.LS_CONTACTS_KEY} - ${err}`);
+      }
+    }
+
+    this.setState({ contacts: [...initContacts] });
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.contacts !== prevState.contacts) {
+      try {
+        localStorage.setItem(this.LS_CONTACTS_KEY, JSON.stringify(this.state.contacts));
+      } catch (err) {
+        console.error(`Error: failure saving contacts in LocalStorage: ${this.LS_CONTACTS_KEY} - ${err}`);
+      }
+    }
   }
 
   handleAddContact = newContact => {
